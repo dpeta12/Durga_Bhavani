@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment # blueprint of the pod
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongo 
+spec:
+  replicas: 1
+  selector:
+    matchLabels: # key value pair, additional identifiers of the components
+      app: mongo
+  template: # configuration of the pod 
+    metadata:
+      labels:
+        app: mongo #pod label 
+    spec:
+      containers: # definition of the containers 
+      - name: mongodb # name of the container
+        image: mongo:5.0 
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-password  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
